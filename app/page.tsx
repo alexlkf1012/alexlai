@@ -1,103 +1,158 @@
-import Image from "next/image";
+'use client';
+
+import { motion, AnimatePresence } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
+import Image from 'next/image';
+import Link from 'next/link';
+import Navbar from './components/Navbar';
+import { useEffect, useMemo, useState } from 'react';
+
+interface Item {
+  type: 'image' | 'video';
+  src?: string;
+  thumbnailSrc?: string;
+  videoUrl?: string;
+  title: string;
+  description: string;
+  link: string;
+}
+
+const items: Item[] = [
+  {
+    type: 'image',
+    src: '/images/trump_usa.jpg',
+    title: 'Graphic Portfolios',
+    description: '',
+    link: '/photos',
+  },
+  {
+    type: 'image',
+    src: '/images/trade_policy.jpg',
+    title: 'Video Portfolios',
+    description: '',
+    link: '/videos',
+  },
+  {
+    type: 'image',
+    src: '/images/energy_policy.jpg',
+    title: 'About me',
+    description: '',
+    link: '/about',
+  },
+];
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const FADE_DURATION_SECONDS = 1.2;
+  const DWELL_MS = 3000; 
+  const INTERVAL_MS = DWELL_MS + FADE_DURATION_SECONDS * 2 * 1000;
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const greetings: string[] = useMemo(
+    () => [
+      '你好',
+      'Hello',
+      'Bonjour',
+      'Hola',
+      'Ciao',
+      'Hallo',
+      'Olá',
+      'Привет',
+      'こんにちは',
+      '안녕하세요',
+      'Xin chào',
+      'สวัสดี',
+    ],
+    []
+  );
+
+  const [greetingIndex, setGreetingIndex] = useState(0);
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setGreetingIndex((prev) => (prev + 1) % greetings.length);
+    }, INTERVAL_MS);
+    return () => clearInterval(timerId);
+  }, [greetings.length, INTERVAL_MS]);
+
+  return (
+    <div className="relative min-h-[100svh]">
+      <Navbar />
+
+      {/* ✅ 全頁固定漸變背景，z-0 確保可見 */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="fixed inset-0 z-0 bg-gradient-to-r from-purple-100 via-yellow-50 to-blue-100 opacity-40 pointer-events-none"
+      />
+
+      {/* 內容層 z-10 */}
+      <div className="relative z-10 pt-16">
+        <div className="container mx-auto px-4 pt-12 pb-20">
+          <div className="relative">
+            <h2 className="text-2xl text-center mb-8 text-gray-700" aria-live="polite">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={greetings[greetingIndex]}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: FADE_DURATION_SECONDS, ease: 'easeInOut' }}
+                >
+                  {greetings[greetingIndex]}
+                </motion.span>
+              </AnimatePresence>
+            </h2>
+
+            <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800">
+              Alex&apos;s Portfolio
+            </h1>
+
+            <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+              A Multimedia Designer
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
+            {items.map((item, index) => {
+              const [ref, inView] = useInView({
+                triggerOnce: true,
+                threshold: 0.1,
+              });
+
+              return (
+                <Link href={item.link} key={index}>
+                  <motion.div
+                    ref={ref}
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={inView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.5, delay: index * 0.2 }}
+                    className="group relative h-[600px] bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform hover:scale-[1.02]"
+                  >
+                    <div className="absolute inset-0">
+                      <Image
+                        src={item.src || ''}
+                        alt={item.title}
+                        fill
+                        className="object-cover"
+                        priority={index === 0}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent pointer-events-none" />
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+                      <h3 className="text-white text-2xl font-bold mb-2 drop-shadow-lg">
+                        {item.title}
+                      </h3>
+                      <p className="text-white/90 text-base drop-shadow-lg">
+                        {item.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
